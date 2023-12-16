@@ -34,7 +34,6 @@ impl Server {
 
     pub fn serve(mut self) {
         let address = (Ipv4Addr::LOCALHOST, 8080);
-        dbg!(address);
         let listener = TcpListener::bind(address).unwrap();
 
         for stream in listener.incoming() {
@@ -47,8 +46,8 @@ impl Server {
         let request = read_and_parse_request(&mut stream);
 
         let response = {
-            let Some(mut handler) = self.router.lookup_handler(request.method, &request.path) else {
-                panic!("Unknown method+path");
+            let Some(handler) = self.router.lookup_handler(request.method, &request.path) else {
+                panic!("unknown method+path");
             };
 
             handler(request)

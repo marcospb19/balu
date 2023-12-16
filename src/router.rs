@@ -14,24 +14,24 @@ impl Router {
     }
 
     #[inline]
-    pub fn get<F, R>(self, path: &'static str, mut handler: F) -> Self
+    pub fn get<F, R>(self, path: &'static str, handler: F) -> Self
     where
-        F: FnMut(Request) -> R + 'static,
+        F: Fn(Request) -> R + 'static,
         R: IntoResponse,
     {
         self._add(Method::Get, path, Box::new(move |req| handler(req).into_response()))
     }
 
     #[inline]
-    pub fn add<F, R>(self, method: Method, path: &'static str, mut handler: F) -> Self
+    pub fn add<F, R>(self, method: Method, path: &'static str, handler: F) -> Self
     where
-        F: FnMut(Request) -> R + 'static,
+        F: Fn(Request) -> R + 'static,
         R: IntoResponse,
     {
         self._add(method, path, Box::new(move |req| handler(req).into_response()))
     }
 
-    fn _add(mut self, method: Method, path: &'static str, handler: Box<dyn FnMut(Request) -> Response>) -> Self {
+    fn _add(mut self, method: Method, path: &'static str, handler: Box<dyn Fn(Request) -> Response>) -> Self {
         let index = self.routes.len();
         let route = Route {
             handler: Box::new(handler),
@@ -49,17 +49,17 @@ impl Router {
         self
     }
 
-    pub fn lookup_handler(&mut self, method: Method, path: &str) -> Option<impl FnMut(Request) -> Response + '_> {
+    pub fn lookup_handler(&mut self, method: Method, path: &str) -> Option<&dyn Fn(Request) -> Response> {
         let &index = self.lookup.get(&(method, path))?;
 
-        let route = self.routes.get_mut(index)?;
+        let route = self.routes.get(index)?;
 
-        Some(&mut route.handler)
+        Some(&route.handler)
     }
 }
 
 pub struct Route {
-    handler: Box<dyn FnMut(Request) -> Response>,
+    handler: Box<dyn Fn(Request) -> Response>,
     path: &'static str,
 }
 
