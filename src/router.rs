@@ -3,12 +3,12 @@ use std::{collections::HashMap, fmt};
 use crate::{response::IntoResponse, Method, Request, Response};
 
 #[derive(Debug, Default)]
-pub struct Router {
-    routes: Vec<Route>,
+pub struct Router<'a> {
+    routes: Vec<Route<'a>>,
     lookup: HashMap<(Method, &'static str), usize>,
 }
 
-impl Router {
+impl<'a> Router<'a> {
     pub fn new() -> Self {
         Self::default()
     }
@@ -16,7 +16,7 @@ impl Router {
     #[inline]
     pub fn get<F, R>(self, path: &'static str, handler: F) -> Self
     where
-        F: Fn(Request) -> R + 'static,
+        F: Fn(Request) -> R + 'a,
         R: IntoResponse,
     {
         self._add(Method::Get, path, Box::new(move |req| handler(req).into_response()))
@@ -25,13 +25,13 @@ impl Router {
     #[inline]
     pub fn add<F, R>(self, method: Method, path: &'static str, handler: F) -> Self
     where
-        F: Fn(Request) -> R + 'static,
+        F: Fn(Request) -> R + 'a,
         R: IntoResponse,
     {
         self._add(method, path, Box::new(move |req| handler(req).into_response()))
     }
 
-    fn _add(mut self, method: Method, path: &'static str, handler: Box<dyn Fn(Request) -> Response>) -> Self {
+    fn _add(mut self, method: Method, path: &'static str, handler: Box<dyn Fn(Request) -> Response + 'a>) -> Self {
         let index = self.routes.len();
         let route = Route {
             handler: Box::new(handler),
@@ -58,12 +58,12 @@ impl Router {
     }
 }
 
-pub struct Route {
-    handler: Box<dyn Fn(Request) -> Response>,
+pub struct Route<'a> {
+    handler: Box<dyn Fn(Request) -> Response + 'a>,
     path: &'static str,
 }
 
-impl fmt::Debug for Route {
+impl fmt::Debug for Route<'_> {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(f, "{}", self.path)
     }

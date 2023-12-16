@@ -23,12 +23,12 @@ pub const LINE_DELIMITER: &[u8] = b"\r\n";
 const MAX_HEADERS: usize = 256;
 
 #[derive(Debug, Default)]
-pub struct Server {
-    router: Router,
+pub struct Server<'a> {
+    router: Router<'a>,
 }
 
-impl Server {
-    pub fn new(router: Router) -> Self {
+impl<'a> Server<'a> {
+    pub fn new(router: Router<'a>) -> Self {
         Self { router }
     }
 

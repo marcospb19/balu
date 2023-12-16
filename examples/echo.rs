@@ -1,7 +1,13 @@
 use balu::{Request, Response, Router, Server};
 
 fn main() {
-    let router = Router::new().get("/echo1", echo1).get("/echo2", echo2);
+    // Intentionally not &'static str, to showcase borrowing in handlers
+    let greet_message = &String::from("Hello World!");
+
+    let router = Router::new()
+        .get("/echo1", echo1)
+        .get("/echo2", echo2)
+        .get("/greet", |_| greet_message.clone());
 
     Server::new(router).serve();
 }
