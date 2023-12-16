@@ -39,9 +39,7 @@ impl Server {
 
         for stream in listener.incoming() {
             let stream = stream.unwrap();
-            println!("----------- handle request start ------------");
             self.handle_request(stream);
-            println!("----------- handle request end ------------");
         }
     }
 
@@ -50,7 +48,7 @@ impl Server {
 
         let response = {
             let Some(mut handler) = self.router.lookup_handler(request.method, &request.path) else {
-                panic!("unknown method+path");
+                panic!("Unknown method+path");
             };
 
             handler(request)
@@ -128,7 +126,6 @@ fn read_and_parse_request(stream: &mut TcpStream) -> Request {
     let request = Request {
         method: request.method.unwrap().parse().unwrap(),
         path: request.path.unwrap().to_string(),
-        // protocol: request.protocol.unwrap().to_string(),
         version: request.version.unwrap().to_string(),
         headers,
         body: String::new(),
@@ -163,15 +160,4 @@ pub struct Request {
     pub body: String,
 }
 
-// // TODO: use Cow, because the user can tweak it
-// type HeaderPair<'a> = (&'a str, &'a [u8]);
 type HeaderMap = SmallVec<[(String, String); 64]>;
-
-// GET / HTTP/1.1
-// Host: localhost:8080
-// Accept-Encoding: gzip, deflate, br
-// Connection: keep-alive
-// Content-Length: 14
-// User-Agent: HTTPie/3.2.1
-// Accept: application/json, */*;q=0.5
-// Content-Type: application/json
